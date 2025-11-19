@@ -53,10 +53,10 @@ public class Order extends Auditable {
     private UUID productId;
 
     @Column(name="start_hub_id")
-    private long startHubId;
+    private Long startHubId;
 
     @Column(name = "end_hub_id")
-    private long endHubId;
+    private Long endHubId;
 
     @Column(name = "order_user_id", nullable = false)
     private UUID orderUserId;
@@ -74,8 +74,8 @@ public class Order extends Auditable {
             String productName,
             LocalDateTime dueAt,
             String requestMemo,
-            long startHubId,
-            long endHubId,
+            Long startHubId,
+            Long endHubId,
             UUID requestVendorId,
             UUID receiveVendorId
     ){
@@ -102,8 +102,8 @@ public class Order extends Auditable {
             String productName,
             LocalDateTime dueAt,
             String requestMemo,
-            long startHubId,
-            long endHubId,
+            Long startHubId,
+            Long endHubId,
             UUID requestVendorId,
             UUID receiveVendorId
     ) {
