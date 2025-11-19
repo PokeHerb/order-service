@@ -15,4 +15,7 @@ public enum OrderStatus {
     public boolean isCancellable() {
         return this == CREATED || this == ASSIGNED;
     }
+    public boolean isEditable() {
+        return this == CREATED || this == ASSIGNED;
+    }
 }

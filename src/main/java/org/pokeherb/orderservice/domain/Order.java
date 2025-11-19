@@ -121,6 +121,7 @@ public class Order extends Auditable {
     }
 
     public void assignDriver(UUID driverId){
+        ensureNotDeleted();
         if(this.orderStatus == OrderStatus.CANCELLED || this.orderStatus == OrderStatus.COMPLETED){
             throw new IllegalStateException("cannot assign driver to finished order");
         }
@@ -130,6 +131,7 @@ public class Order extends Auditable {
     }
 
     public void cancelOrder(UUID canceller, LocalDateTime cancelledAt){
+        ensureNotDeleted();
         if(!this.orderStatus.isCancellable()){
             throw new IllegalStateException("order cannot be canelled in status: " + orderStatus);
         }
@@ -140,6 +142,7 @@ public class Order extends Auditable {
     }
 
     public void completeOrder(){
+        ensureNotDeleted();
         if(this.orderStatus == OrderStatus.COMPLETED){
             throw new IllegalStateException("order cannot be completed in status: " + orderStatus);
         }
@@ -148,9 +151,37 @@ public class Order extends Auditable {
     }
 
     public void delete(String deletedBy, LocalDateTime deletedAt) {
+        ensureNotDeleted();
         this.deletedBy = deletedBy;
         this.deletedAt = deletedAt;
         this.updatedAt = deletedAt;
     }
 
+    public void updateOrderInfo(String productName, Integer quantity, String requestMemo, LocalDateTime dueAt) {
+        ensureNotDeleted();
+
+        if (!this.orderStatus.isEditable()) {
+            throw new IllegalStateException("order cannot be updated in status: " + orderStatus);
+        }
+
+        if (productName != null && !productName.isBlank()) {
+            this.productName = productName;
+        }
+        if (quantity != null && quantity > 0) {
+            this.quantity = quantity;
+        }
+        if (requestMemo != null) {
+            this.requestMemo = requestMemo;
+        }
+        if (dueAt != null) {
+            this.dueAt = dueAt;
+        }
+
+        this.updatedAt = LocalDateTime.now();
+    }
+    private void ensureNotDeleted() {
+        if (this.deletedAt != null) {
+            throw new IllegalStateException("order is already deleted");
+        }
+    }
 }
