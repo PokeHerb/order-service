@@ -5,8 +5,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.pokeherb.orderservice.domain.exception.OrderErrorCode;
 import org.pokeherb.orderservice.global.domain.Auditable;
-import org.springframework.cglib.core.Local;
+import org.pokeherb.orderservice.global.infrastructure.exception.CustomException;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -52,10 +53,10 @@ public class Order extends Auditable {
     private UUID productId;
 
     @Column(name="start_hub_id")
-    private UUID startHubId;
+    private long startHubId;
 
     @Column(name = "end_hub_id")
-    private UUID endHubId;
+    private long endHubId;
 
     @Column(name = "order_user_id", nullable = false)
     private UUID orderUserId;
@@ -73,8 +74,8 @@ public class Order extends Auditable {
             String productName,
             LocalDateTime dueAt,
             String requestMemo,
-            UUID startHubId,
-            UUID endHubId,
+            long startHubId,
+            long endHubId,
             UUID requestVendorId,
             UUID receiveVendorId
     ){
@@ -101,11 +102,32 @@ public class Order extends Auditable {
             String productName,
             LocalDateTime dueAt,
             String requestMemo,
-            UUID startHubId,
-            UUID endHubId,
+            long startHubId,
+            long endHubId,
             UUID requestVendorId,
             UUID receiveVendorId
     ) {
+        // 필수값 검증
+        if (productId == null) {
+            throw new CustomException(OrderErrorCode.INVALID_PRODUCT);
+        }
+        if (orderUserId == null) {
+            throw new CustomException(OrderErrorCode.INVALID_ORDER_USER);
+        }
+        if (productName == null || productName.isBlank()) {
+            throw new CustomException(OrderErrorCode.INVALID_PRODUCT_NAME);
+        }
+
+        // 수량 검증 (int 이므로 null 체크 X)
+        if (quantity <= 0) {
+            throw new CustomException(OrderErrorCode.INVALID_QUANTITY);
+        }
+
+        // 납기 일 검증
+        if (dueAt != null && dueAt.isBefore(LocalDateTime.now())) {
+            throw new CustomException(OrderErrorCode.INVALID_DUE_DATE);
+        }
+
         return new Order(
                 productId,
                 quantity,
@@ -120,20 +142,10 @@ public class Order extends Auditable {
         );
     }
 
-    public void assignDriver(UUID driverId){
-        ensureNotDeleted();
-        if(this.orderStatus == OrderStatus.CANCELLED || this.orderStatus == OrderStatus.COMPLETED){
-            throw new IllegalStateException("cannot assign driver to finished order");
-        }
-        this.deliveryDriverId = driverId;
-        this.orderStatus = OrderStatus.ASSIGNED;
-        this.updatedAt = LocalDateTime.now();
-    }
-
     public void cancelOrder(UUID canceller, LocalDateTime cancelledAt){
         ensureNotDeleted();
         if(!this.orderStatus.isCancellable()){
-            throw new IllegalStateException("order cannot be canelled in status: " + orderStatus);
+            throw new CustomException(OrderErrorCode.ORDER_CANNOT_BE_CANCELLED);
         }
         this.orderStatus = OrderStatus.CANCELLED;
         this.cancelledAt = cancelledAt;
@@ -143,8 +155,8 @@ public class Order extends Auditable {
 
     public void completeOrder(){
         ensureNotDeleted();
-        if(this.orderStatus == OrderStatus.COMPLETED){
-            throw new IllegalStateException("order cannot be completed in status: " + orderStatus);
+        if (!this.orderStatus.canComplete()) {
+            throw new CustomException(OrderErrorCode.ORDER_CANNOT_BE_COMPLETED);
         }
         this.orderStatus = OrderStatus.COMPLETED;
         this.updatedAt = LocalDateTime.now();
@@ -161,7 +173,7 @@ public class Order extends Auditable {
         ensureNotDeleted();
 
         if (!this.orderStatus.isEditable()) {
-            throw new IllegalStateException("order cannot be updated in status: " + orderStatus);
+            throw new CustomException(OrderErrorCode.ORDER_CANNOT_BE_COMPLETED);
         }
 
         if (productName != null && !productName.isBlank()) {
@@ -181,7 +193,7 @@ public class Order extends Auditable {
     }
     private void ensureNotDeleted() {
         if (this.deletedAt != null) {
-            throw new IllegalStateException("order is already deleted");
+            throw new CustomException(OrderErrorCode.ORDER_ALREADY_DELETED);
         }
     }
 }

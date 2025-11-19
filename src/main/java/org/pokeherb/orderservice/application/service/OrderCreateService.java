@@ -19,7 +19,6 @@ public class OrderCreateService {
 
     @Transactional
     public OrderResponse createOrder(OrderCreateCommand command) {
-        // 여기서 command 유효성 1차 체크 가능 (null, quantity > 0 등)
         Order order = Order.create(
                 command.productId(),
                 command.quantity(),
