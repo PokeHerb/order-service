@@ -10,8 +10,8 @@ public record OrderCreateCommand(
         String productName,
         LocalDateTime dueAt,
         String requestMemo,
-        UUID startHubId,
-        UUID endHubId,
+        long startHubId,
+        long endHubId,
         UUID requestVendorId,
         UUID receiveVendorId
 ) { }
