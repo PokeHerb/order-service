@@ -124,7 +124,7 @@ public class Order extends Auditable {
 
     public void cancelOrder(UUID canceller, LocalDateTime cancelledAt){
         ensureNotDeleted();
-        if(!this.orderStatus.isCancellable()){
+        if(!this.orderStatus.canTransitionTo(OrderStatus.CANCELLED)){
             throw new CustomException(OrderErrorCode.ORDER_CANNOT_BE_CANCELLED);
         }
         this.orderStatus = OrderStatus.CANCELLED;

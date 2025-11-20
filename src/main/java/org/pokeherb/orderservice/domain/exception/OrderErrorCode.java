@@ -21,7 +21,8 @@ public enum OrderErrorCode implements BaseErrorCode {
     INVALID_PRODUCT(HttpStatus.BAD_REQUEST, "ORDER400_8", "상품 정보가 올바르지 않습니다."),
     INVALID_PRODUCT_NAME(HttpStatus.BAD_REQUEST, "ORDER400_9", "상품 이름이 없습니다."),
     INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "ORDER400_10", "잘못된 주문 상태 입니다."),
-    INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "ORDER400_10", "유효하지 않은 상태 전환입니다.");
+    INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "ORDER400_11", "유효하지 않은 상태 전환입니다."),
+    INVALID_CANCEL_USER(HttpStatus.BAD_REQUEST, "ORDER400_12", "유효하지 않은 사용자입니다.");
 
     private final HttpStatus status;
     private final String code;

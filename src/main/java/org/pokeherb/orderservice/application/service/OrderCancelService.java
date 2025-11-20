@@ -19,8 +19,14 @@ public class OrderCancelService {
 
     @Transactional
     public OrderResponse cancelOrder(UUID orderId, UUID cancellerId){
+        if (cancellerId == null) {
+            // 필요하면 OrderErrorCode에 CANCEL_USER_INVALID 같은 코드 추가
+            throw new CustomException(OrderErrorCode.INVALID_CANCEL_USER);
+        }
+
         Order order = orderRepository.findById(orderId).
                 orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+
         order.cancelOrder(cancellerId, LocalDateTime.now());
 
         return OrderResponse.from(order);
