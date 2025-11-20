@@ -1,7 +1,7 @@
 package org.pokeherb.orderservice.application.service;
 
 import lombok.RequiredArgsConstructor;
-import org.pokeherb.orderservice.domain.Order;
+import org.pokeherb.orderservice.domain.entity.Order;
 import org.pokeherb.orderservice.domain.OrderRepository;
 import org.pokeherb.orderservice.domain.exception.OrderErrorCode;
 import org.pokeherb.orderservice.global.infrastructure.exception.CustomException;

@@ -1,6 +1,6 @@
 package org.pokeherb.orderservice.infrastructure.persistence;
 
-import org.pokeherb.orderservice.domain.Order;
+import org.pokeherb.orderservice.domain.entity.Order;
 import org.pokeherb.orderservice.domain.OrderRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;

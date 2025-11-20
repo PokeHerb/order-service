@@ -1,7 +1,7 @@
 package org.pokeherb.orderservice.presentation.dto;
 
-import org.pokeherb.orderservice.domain.Order;
-import org.pokeherb.orderservice.domain.OrderStatus;
+import org.pokeherb.orderservice.domain.entity.Order;
+import org.pokeherb.orderservice.domain.entity.OrderStatus;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
