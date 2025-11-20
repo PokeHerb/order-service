@@ -3,7 +3,7 @@ package org.pokeherb.orderservice.application.command;
 import lombok.RequiredArgsConstructor;
 import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderUpdateRequestDto;
-import org.pokeherb.orderservice.application.service.dto.response.OrderBasicResponseDto;
+import org.pokeherb.orderservice.application.service.dto.response.OrderCreateResponseDto;
 import org.pokeherb.orderservice.domain.OrderRepository;
 import org.pokeherb.orderservice.domain.command.OrderCreateCommand;
 import org.pokeherb.orderservice.domain.command.OrderUpdateCommand;
@@ -23,7 +23,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
     // Create
     @Transactional
-    public OrderBasicResponseDto createOrder(OrderCreateRequestDto request) {
+    public OrderCreateResponseDto createOrder(OrderCreateRequestDto request) {
         // 1. 입력 DTO 검증 (형식/널체크 등)
         validateOrderCreate(request);
 
@@ -36,19 +36,19 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         // 4. 저장 및 응답 DTO 변환
         Order saved = orderRepository.save(order);
 
-        return OrderBasicResponseDto.from(saved);
+        return OrderCreateResponseDto.from(saved);
     }
 
     // Order
     @Transactional
-    public OrderBasicResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto request) {
+    public OrderCreateResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto request) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
 
         OrderUpdateCommand updateCommand = updateToCommand(request);
 
         order.update(updateCommand);
-        return OrderBasicResponseDto.from(order);
+        return OrderCreateResponseDto.from(order);
     }
 
     private void validateOrderCreate(OrderCreateRequestDto request) {

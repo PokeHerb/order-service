@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Getter
 @Builder
-public class OrderBasicResponseDto {
+public class OrderCreateResponseDto {
     private UUID orderId;
     private String productName;
     private int quantity;
@@ -17,8 +17,8 @@ public class OrderBasicResponseDto {
     private LocalDateTime dueAt;
     private LocalDateTime createdAt;
 
-    public static OrderBasicResponseDto from(Order order) {
-        return OrderBasicResponseDto.builder()
+    public static OrderCreateResponseDto from(Order order) {
+        return OrderCreateResponseDto.builder()
                 .orderId(order.getId())
                 .productName(order.getProductName())
                 .quantity(order.getQuantity())
