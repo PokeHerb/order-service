@@ -1,10 +1,13 @@
-package org.pokeherb.orderservice.domain;
+package org.pokeherb.orderservice.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
+import org.pokeherb.orderservice.domain.OrderRepository;
 import org.pokeherb.orderservice.domain.exception.OrderErrorCode;
 import org.pokeherb.orderservice.global.domain.Auditable;
 import org.pokeherb.orderservice.global.infrastructure.exception.CustomException;
@@ -67,79 +70,39 @@ public class Order extends Auditable {
     @Column(name = "receive_vendor_id")
     private UUID receiveVendorId;
 
+    @Builder
     private Order(
-            UUID productId,
-            int quantity,
-            UUID orderUserId,
-            String productName,
+            UUID id,
+            OrderStatus orderStatus,
             LocalDateTime dueAt,
             String requestMemo,
-            Long startHubId,
-            Long endHubId,
-            UUID requestVendorId,
-            UUID receiveVendorId
-    ){
-        if(quantity <= 0){
-            throw new IllegalArgumentException("quantity must be greater than 0");
-        }
-        this.productId = productId;
-        this.quantity = quantity;
-        this.orderUserId = orderUserId;
-        this.productName = productName;
-        this.dueAt = dueAt;
-        this.requestMemo = requestMemo;
-        this.startHubId = startHubId;
-        this.endHubId = endHubId;
-        this.requestVendorId = requestVendorId;
-        this.receiveVendorId = receiveVendorId;
-        this.orderStatus = OrderStatus.CREATED;
-    }
-
-    public static Order create(
-            UUID productId,
             int quantity,
-            UUID orderUserId,
             String productName,
-            LocalDateTime dueAt,
-            String requestMemo,
+            UUID cancelledBy,
+            LocalDateTime cancelledAt,
+            UUID deliveryDriverId,
+            UUID productId,
             Long startHubId,
             Long endHubId,
+            UUID orderUserId,
             UUID requestVendorId,
             UUID receiveVendorId
     ) {
-        // 필수값 검증
-        if (productId == null) {
-            throw new CustomException(OrderErrorCode.INVALID_PRODUCT);
-        }
-        if (orderUserId == null) {
-            throw new CustomException(OrderErrorCode.INVALID_ORDER_USER);
-        }
-        if (productName == null || productName.isBlank()) {
-            throw new CustomException(OrderErrorCode.INVALID_PRODUCT_NAME);
-        }
-
-        // 수량 검증 (int 이므로 null 체크 X)
-        if (quantity <= 0) {
-            throw new CustomException(OrderErrorCode.INVALID_QUANTITY);
-        }
-
-        // 납기 일 검증
-        if (dueAt != null && dueAt.isBefore(LocalDateTime.now())) {
-            throw new CustomException(OrderErrorCode.INVALID_DUE_DATE);
-        }
-
-        return new Order(
-                productId,
-                quantity,
-                orderUserId,
-                productName,
-                dueAt,
-                requestMemo,
-                startHubId,
-                endHubId,
-                requestVendorId,
-                receiveVendorId
-        );
+        this.id = id;
+        this.orderStatus = (orderStatus != null) ? orderStatus : OrderStatus.CREATED;
+        this.dueAt = dueAt;
+        this.requestMemo = requestMemo;
+        this.quantity = quantity;
+        this.productName = productName;
+        this.cancelledBy = cancelledBy;
+        this.cancelledAt = cancelledAt;
+        this.deliveryDriverId = deliveryDriverId;
+        this.productId = productId;
+        this.startHubId = startHubId;
+        this.endHubId = endHubId;
+        this.orderUserId = orderUserId;
+        this.requestVendorId = requestVendorId;
+        this.receiveVendorId = receiveVendorId;
     }
 
     public void cancelOrder(UUID canceller, LocalDateTime cancelledAt){
@@ -162,11 +125,8 @@ public class Order extends Auditable {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void delete(String deletedBy, LocalDateTime deletedAt) {
-        ensureNotDeleted();
-        this.deletedBy = deletedBy;
-        this.deletedAt = deletedAt;
-        this.updatedAt = deletedAt;
+    public void delete(String username) {
+        softDelete(username);
     }
 
     public void updateOrderInfo(String productName, Integer quantity, String requestMemo, LocalDateTime dueAt) {
