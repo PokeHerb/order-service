@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
 import org.pokeherb.orderservice.domain.OrderRepository;
+import org.pokeherb.orderservice.domain.command.OrderCreateCommand;
 import org.pokeherb.orderservice.domain.exception.OrderErrorCode;
 import org.pokeherb.orderservice.global.domain.Auditable;
 import org.pokeherb.orderservice.global.infrastructure.exception.CustomException;
@@ -105,6 +106,22 @@ public class Order extends Auditable {
         this.receiveVendorId = receiveVendorId;
     }
 
+    public static Order create(OrderCreateCommand command){
+        return Order.builder()
+                .productId(command.productId())
+                .quantity(command.quantity())
+                .orderUserId(command.orderUserId())
+                .productName(command.productName())
+                .orderStatus(OrderStatus.CREATED)
+                .dueAt(command.dueAt())
+                .requestMemo(command.requestMemo())
+                .startHubId(command.startHubId())
+                .endHubId(command.endHubId())
+                .requestVendorId(command.requestVendorId())
+                .receiveVendorId(command.receiveVendorId())
+                .build();
+    }
+
     public void cancelOrder(UUID canceller, LocalDateTime cancelledAt){
         ensureNotDeleted();
         if(!this.orderStatus.isCancellable()){
@@ -133,7 +150,7 @@ public class Order extends Auditable {
         ensureNotDeleted();
 
         if (!this.orderStatus.isEditable()) {
-            throw new CustomException(OrderErrorCode.ORDER_CANNOT_BE_COMPLETED);
+            throw new CustomException(OrderErrorCode.ORDER_CANNOT_BE_UPDATED);
         }
 
         if (productName != null && !productName.isBlank()) {
