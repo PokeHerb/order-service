@@ -5,7 +5,7 @@ import org.pokeherb.orderservice.domain.entity.Order;
 import org.pokeherb.orderservice.domain.OrderRepository;
 import org.pokeherb.orderservice.domain.exception.OrderErrorCode;
 import org.pokeherb.orderservice.global.infrastructure.exception.CustomException;
-import org.pokeherb.orderservice.presentation.dto.OrderResponse;
+import org.pokeherb.orderservice.application.service.dto.response.OrderResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -1,4 +1,4 @@
-package org.pokeherb.orderservice.presentation.dto;
+package org.pokeherb.orderservice.application.service.dto.response;
 
 import org.pokeherb.orderservice.domain.entity.Order;
 import org.pokeherb.orderservice.domain.entity.OrderStatus;
@@ -6,39 +6,29 @@ import org.pokeherb.orderservice.domain.entity.OrderStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-// 상세 조회 응답
-public record OrderResponse(
+// 목록용 요약 응답
+public record OrderSummaryResponse(
         UUID id,
         UUID productId,
         UUID orderUserId,
         UUID requestVendorId,
-        UUID deliveryDriverId,
         OrderStatus status,
         LocalDateTime dueAt,
-        LocalDateTime cancelledAt,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt,
-        LocalDateTime deletedAt,
         String productName,
-        int quantity,
-        String requestMemo
+        int quantity
 ) {
-    public static OrderResponse from(Order order) {
-        return new OrderResponse(
+    public static OrderSummaryResponse from(Order order) {
+        return new OrderSummaryResponse(
                 order.getId(),
                 order.getProductId(),
                 order.getOrderUserId(),
                 order.getRequestVendorId(),
-                order.getDeliveryDriverId(),
                 order.getOrderStatus(),
                 order.getDueAt(),
-                order.getCancelledAt(),
                 order.getCreatedAt(),
-                order.getUpdatedAt(),
-                order.getDeletedAt(),
                 order.getProductName(),
-                order.getQuantity(),
-                order.getRequestMemo()
+                order.getQuantity()
         );
     }
 }
