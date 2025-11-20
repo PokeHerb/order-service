@@ -6,9 +6,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
-import org.pokeherb.orderservice.domain.OrderRepository;
 import org.pokeherb.orderservice.domain.command.OrderCreateCommand;
+import org.pokeherb.orderservice.domain.command.OrderStatusUpdateCommand;
+import org.pokeherb.orderservice.domain.command.OrderUpdateCommand;
 import org.pokeherb.orderservice.domain.exception.OrderErrorCode;
 import org.pokeherb.orderservice.global.domain.Auditable;
 import org.pokeherb.orderservice.global.infrastructure.exception.CustomException;
@@ -39,7 +39,7 @@ public class Order extends Auditable {
     private String requestMemo;
 
     @Column(name = "quantity", nullable = false)
-    private int quantity;
+    private Integer quantity;
 
     @Column(name = "product_name", nullable = false)
     private String productName;
@@ -146,28 +146,42 @@ public class Order extends Auditable {
         softDelete(username);
     }
 
-    public void updateOrderInfo(String productName, Integer quantity, String requestMemo, LocalDateTime dueAt) {
+    public void update(OrderUpdateCommand command) {
         ensureNotDeleted();
-
         if (!this.orderStatus.isEditable()) {
-            throw new CustomException(OrderErrorCode.ORDER_CANNOT_BE_UPDATED);
+            throw new CustomException(OrderErrorCode.ORDER_CANNOT_BE_COMPLETED);
         }
 
-        if (productName != null && !productName.isBlank()) {
-            this.productName = productName;
+        if (command.productName() != null && !command.productName().isBlank()) {
+            this.productName = command.productName();
         }
-        if (quantity != null && quantity > 0) {
-            this.quantity = quantity;
+        if (command.quantity() != null && command.quantity() > 0) {
+            this.quantity = command.quantity();
         }
-        if (requestMemo != null) {
-            this.requestMemo = requestMemo;
+        if (command.requestMemo() != null) {
+            this.requestMemo = command.requestMemo();
         }
-        if (dueAt != null) {
-            this.dueAt = dueAt;
+        if (command.dueAt() != null) {
+            this.dueAt = command.dueAt();
         }
 
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void applyStatusUpdate(OrderStatusUpdateCommand command) {
+        ensureNotDeleted();
+        if (!this.orderStatus.CANTRANSITIONTO(command.newStatus())){
+            throw new CustomException(OrderErrorCode.INVALID_STATUS_TRANSITION);
+        }
+        this.orderStatus = command.newStatus();
+        if (command.deliveryDriverId() != null) {
+            this.deliveryDriverId = command.deliveryDriverId();
+        }
+        this.updatedAt = command.changedAt() != null
+                ? command.changedAt()
+                : LocalDateTime.now();
+    }
+
     private void ensureNotDeleted() {
         if (this.deletedAt != null) {
             throw new CustomException(OrderErrorCode.ORDER_ALREADY_DELETED);
