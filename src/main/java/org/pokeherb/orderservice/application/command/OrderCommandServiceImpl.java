@@ -13,7 +13,7 @@ import org.pokeherb.orderservice.global.infrastructure.exception.CustomException
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,13 +21,14 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
     private final OrderRepository orderRepository;
 
+    // Create
     @Transactional
     public OrderBasicResponseDto createOrder(OrderCreateRequestDto request) {
         // 1. 입력 DTO 검증 (형식/널체크 등)
         validateOrderCreate(request);
 
         // 2. DTO -> 도메인 커맨드 변환
-        OrderCreateCommand command = toCommand(request);
+        OrderCreateCommand command = createToCommand(request);
 
         // 3. 도메인에 "주문 생성" 책임 위임
         Order order = Order.create(command);
@@ -38,10 +39,16 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         return OrderBasicResponseDto.from(saved);
     }
 
+    // Order
     @Transactional
-    public OrderBasicResponseDto updateOrder(OrderUpdateRequestDto request) {
-        OrderUpdateCommand updateCommand = toCommand(request);
+    public OrderBasicResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto request) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
 
+        OrderUpdateCommand updateCommand = updateToCommand(request);
+
+        order.update(updateCommand);
+        return OrderBasicResponseDto.from(order);
     }
 
     private void validateOrderCreate(OrderCreateRequestDto request) {
@@ -54,7 +61,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     }
 
     // DTO -> Domain Command 변환 메서드
-    private OrderCreateCommand toCommand(OrderCreateRequestDto request) {
+    private OrderCreateCommand createToCommand(OrderCreateRequestDto request) {
         return new OrderCreateCommand(
                 request.productId(),
                 request.quantity(),
@@ -66,6 +73,14 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 request.endHubId(),
                 request.requestVendorId(),
                 request.receiveVendorId()
+        );
+    }
+    private OrderUpdateCommand updateToCommand(OrderUpdateRequestDto request) {
+        return new OrderUpdateCommand(
+                request.productName(),
+                request.quantity(),
+                request.requestMemo(),
+                request.dueAt()
         );
     }
 }
