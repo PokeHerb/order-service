@@ -170,10 +170,14 @@ public class Order extends Auditable {
 
     public void applyStatusUpdate(OrderStatusUpdateCommand command) {
         ensureNotDeleted();
-        if (!this.orderStatus.CANTRANSITIONTO(command.newStatus())){
+        OrderStatus targetStatus = command.newStatus();
+
+        if (!this.orderStatus.canTransitionTo(targetStatus)) {
             throw new CustomException(OrderErrorCode.INVALID_STATUS_TRANSITION);
         }
-        this.orderStatus = command.newStatus();
+
+        this.orderStatus = targetStatus;
+
         if (command.deliveryDriverId() != null) {
             this.deliveryDriverId = command.deliveryDriverId();
         }
