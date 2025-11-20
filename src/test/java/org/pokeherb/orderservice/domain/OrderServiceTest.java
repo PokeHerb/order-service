@@ -6,15 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.pokeherb.orderservice.application.command.OrderCommandService;
 import org.pokeherb.orderservice.application.service.*;
 import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
-import org.pokeherb.orderservice.application.service.dto.response.OrderBasicResponseDto;
+import org.pokeherb.orderservice.application.service.dto.response.OrderCreateResponseDto;
 import org.pokeherb.orderservice.domain.entity.Order;
 import org.pokeherb.orderservice.domain.entity.OrderStatus;
-import org.pokeherb.orderservice.presentation.dto.OrderResponse;
-import org.pokeherb.orderservice.presentation.dto.OrderSummaryResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -106,7 +102,7 @@ public class OrderServiceTest {
     @DisplayName("서비스: 주문 생성")
     @WithMockUser(username = "test-user", roles = "USER")
     void createOrder(){
-        OrderBasicResponseDto response = orderCommandService.createOrder(createCommand());
+        OrderCreateResponseDto response = orderCommandService.createOrder(createCommand());
         UUID orderId = response.getOrderId();
 
         Order order = orderRepository.findById(orderId).orElseThrow();

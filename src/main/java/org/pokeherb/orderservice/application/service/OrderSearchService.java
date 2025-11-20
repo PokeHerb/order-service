@@ -1,9 +1,9 @@
 package org.pokeherb.orderservice.application.service;
 
 import lombok.RequiredArgsConstructor;
-import org.pokeherb.orderservice.application.service.dto.OrderSearchCondition;
-import org.pokeherb.orderservice.infrastructure.persistence.OrderQueryDao;
-import org.pokeherb.orderservice.presentation.dto.OrderSummaryResponse;
+import org.pokeherb.orderservice.application.service.dto.request.OrderSearchConditionRequestDto;
+import org.pokeherb.orderservice.domain.OrderQueryDao;
+import org.pokeherb.orderservice.application.service.dto.response.OrderSummaryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ public class OrderSearchService {
     private final OrderQueryDao orderQueryDao;
 
     @Transactional
-    public Page<OrderSummaryResponse> searchOrders(OrderSearchCondition condition, Pageable pageable) {
+    public Page<OrderSummaryResponse> searchOrders(OrderSearchConditionRequestDto condition, Pageable pageable) {
         return orderQueryDao.search(condition, pageable);
     }
 }
