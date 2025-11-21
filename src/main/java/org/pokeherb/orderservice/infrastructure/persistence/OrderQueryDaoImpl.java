@@ -5,7 +5,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.pokeherb.orderservice.application.service.dto.request.OrderSearchConditionRequestDto;
 import org.pokeherb.orderservice.domain.repository.OrderQueryRepository;
-import org.pokeherb.orderservice.application.service.dto.response.OrderSummaryResponse;
+import org.pokeherb.orderservice.application.service.dto.response.OrderSummaryResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -20,7 +20,7 @@ public class OrderQueryDaoImpl implements OrderQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<OrderSummaryResponse> search(OrderSearchConditionRequestDto condition, Pageable pageable) {
+    public Page<OrderSummaryResponseDto> search(OrderSearchConditionRequestDto condition, Pageable pageable) {
 
         var builder = new BooleanBuilder();
 
@@ -48,7 +48,7 @@ public class OrderQueryDaoImpl implements OrderQueryRepository {
                 .limit(pageable.getPageSize())
                 .fetch()
                 .stream()
-                .map(OrderSummaryResponse::from)
+                .map(OrderSummaryResponseDto::from)
                 .toList();
 
         var countQuery = queryFactory

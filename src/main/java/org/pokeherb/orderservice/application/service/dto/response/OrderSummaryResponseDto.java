@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 // 목록용 요약 응답
-public record OrderSummaryResponse(
+public record OrderSummaryResponseDto(
         UUID id,
         UUID productId,
         UUID orderUserId,
@@ -18,8 +18,8 @@ public record OrderSummaryResponse(
         String productName,
         int quantity
 ) {
-    public static OrderSummaryResponse from(Order order) {
-        return new OrderSummaryResponse(
+    public static OrderSummaryResponseDto from(Order order) {
+        return new OrderSummaryResponseDto(
                 order.getId(),
                 order.getProductId(),
                 order.getOrderUserId(),
