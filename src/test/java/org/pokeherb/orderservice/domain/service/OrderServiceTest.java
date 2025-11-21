@@ -5,14 +5,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.pokeherb.orderservice.application.command.OrderCommandService;
 import org.pokeherb.orderservice.application.query.OrderQueryService;
-import org.pokeherb.orderservice.application.service.*;
 import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderSearchConditionRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderStatusUpdateMessageDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderUpdateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderCreateResponseDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderResponseDto;
-import org.pokeherb.orderservice.application.service.dto.response.OrderSummaryResponse;
+import org.pokeherb.orderservice.application.service.dto.response.OrderSummaryResponseDto;
 import org.pokeherb.orderservice.domain.repository.OrderRepository;
 import org.pokeherb.orderservice.domain.entity.Order;
 import org.pokeherb.orderservice.domain.entity.OrderStatus;
@@ -252,7 +251,7 @@ public class OrderServiceTest {
         );
 
 
-        Page<OrderSummaryResponse> result =
+        Page<OrderSummaryResponseDto> result =
                 orderQueryService.searchOrders(condition, PageRequest.of(0, 10));
 
         assertEquals(2, result.getTotalElements());
@@ -279,7 +278,7 @@ public class OrderServiceTest {
         );
 
         // when
-        Page<OrderSummaryResponse> result =
+        Page<OrderSummaryResponseDto> result =
                 orderQueryService.searchOrders(condition, PageRequest.of(0, 10));
 
         // then
@@ -312,7 +311,7 @@ public class OrderServiceTest {
 
         // when: 첫 페이지 (0, size=10)
         PageRequest page0 = PageRequest.of(0, 10);
-        Page<OrderSummaryResponse> pageResult0 =
+        Page<OrderSummaryResponseDto> pageResult0 =
                 orderQueryService.searchOrders(condition, page0);
 
         // then
@@ -323,7 +322,7 @@ public class OrderServiceTest {
 
         // when: 두 번째 페이지 (1, size=10)
         PageRequest page1 = PageRequest.of(1, 10);
-        Page<OrderSummaryResponse> pageResult1 =
+        Page<OrderSummaryResponseDto> pageResult1 =
                 orderQueryService.searchOrders(condition, page1);
 
         assertEquals(10, pageResult1.getContent().size());
@@ -331,7 +330,7 @@ public class OrderServiceTest {
 
         // when: 세 번째 페이지 (2, size=10)
         PageRequest page2 = PageRequest.of(2, 10);
-        Page<OrderSummaryResponse> pageResult2 =
+        Page<OrderSummaryResponseDto> pageResult2 =
                 orderQueryService.searchOrders(condition, page2);
 
         assertEquals(5, pageResult2.getContent().size());  // 마지막 페이지는 5개
