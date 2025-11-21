@@ -2,8 +2,12 @@ package org.pokeherb.orderservice.application.command;
 
 import lombok.RequiredArgsConstructor;
 import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
+import org.pokeherb.orderservice.application.service.dto.request.OrderStatusUpdateMessageDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderUpdateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderCreateResponseDto;
+import org.pokeherb.orderservice.application.service.dto.response.OrderResponseDto;
+import org.pokeherb.orderservice.domain.command.OrderStatusUpdateCommand;
+import org.pokeherb.orderservice.domain.entity.OrderStatus;
 import org.pokeherb.orderservice.domain.repository.OrderRepository;
 import org.pokeherb.orderservice.domain.command.OrderCreateCommand;
 import org.pokeherb.orderservice.domain.command.OrderUpdateCommand;
@@ -13,6 +17,8 @@ import org.pokeherb.orderservice.global.infrastructure.exception.CustomException
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.UUID;
 
 @Service
@@ -49,6 +55,43 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
         order.update(updateCommand);
         return OrderCreateResponseDto.from(order);
+    }
+
+    @Transactional
+    public OrderResponseDto cancelOrder(UUID orderId, UUID cancellerId){
+        if (cancellerId == null){
+            throw new CustomException(OrderErrorCode.INVALID_CANCEL_USER);
+        }
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+
+        order.cancelOrder(cancellerId, LocalDateTime.now());
+        return OrderResponseDto.from(order);
+    }
+
+    @Transactional
+    public void deleteOrder(UUID orderId, String username){
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+        order.delete(username);
+    }
+
+    @Transactional
+    public void applyStatusUpdate(OrderStatusUpdateMessageDto messageDto){
+        Order order = orderRepository.findById(messageDto.orderId())
+                .orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+
+        boolean isValid = Arrays.stream(OrderStatus.values()).anyMatch(s-> s.name().equals(messageDto.status()));
+        if(!isValid){
+            throw new CustomException(OrderErrorCode.INVALID_ORDER_STATUS);
+        }
+        OrderStatus newStatus = OrderStatus.valueOf(messageDto.status());
+
+        OrderStatusUpdateCommand command = new OrderStatusUpdateCommand(
+                newStatus,
+                messageDto.deliveryDriverId(),
+                messageDto.changedAt()
+        );
+        order.applyStatusUpdate(command);
     }
 
     private void validateOrderCreate(OrderCreateRequestDto request) {

@@ -4,13 +4,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.pokeherb.orderservice.application.command.OrderCommandService;
+import org.pokeherb.orderservice.application.query.OrderQueryService;
 import org.pokeherb.orderservice.application.service.*;
 import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderSearchConditionRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderStatusUpdateMessageDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderUpdateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderCreateResponseDto;
-import org.pokeherb.orderservice.application.service.dto.response.OrderResponse;
+import org.pokeherb.orderservice.application.service.dto.response.OrderResponseDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderSummaryResponse;
 import org.pokeherb.orderservice.domain.repository.OrderRepository;
 import org.pokeherb.orderservice.domain.entity.Order;
@@ -37,22 +38,10 @@ public class OrderServiceTest {
     private OrderCommandService orderCommandService;
 
     @Autowired
-    private OrderCancelService orderCancelService;
-
-    @Autowired
-    private OrderDeleteService orderDeleteService;
-
-    @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
-    private OrderGetService orderGetService;
-
-    @Autowired
-    private OrderSearchService orderSearchService;
-
-    @Autowired
-    private OrderStatusUpdateService orderStatusUpdateService;
+    private OrderQueryService orderQueryService;
 
     private UUID productId;
     private UUID orderUserId;
@@ -162,7 +151,7 @@ public class OrderServiceTest {
         UUID orderId = created.getOrderId();
 
         UUID cancellerId = UUID.randomUUID();
-        OrderResponse response = orderCancelService.cancelOrder(orderId, cancellerId);
+        OrderResponseDto response = orderCommandService.cancelOrder(orderId, cancellerId);
 
         Order order =  orderRepository.findById(orderId).orElseThrow();
         assertEquals(OrderStatus.CANCELLED, order.getOrderStatus());
@@ -179,7 +168,7 @@ public class OrderServiceTest {
         UUID orderId = created.getOrderId();
 
         String deleterId = "test-deleter";
-        orderDeleteService.deleteOrder(orderId, deleterId);
+        orderCommandService.deleteOrder(orderId, deleterId);
 
         Order order =  orderRepository.findById(orderId).orElseThrow();
         assertNotNull(order.getDeletedAt());
@@ -193,7 +182,7 @@ public class OrderServiceTest {
         OrderCreateResponseDto created = orderCommandService.createOrder(createRequest());
         UUID orderId = created.getOrderId();
 
-        OrderResponse response = orderGetService.getOrder(orderId);
+        OrderResponseDto response = orderQueryService.getOrder(orderId);
 
         assertEquals(orderId, response.id());
         assertEquals(productName, response.productName());
@@ -215,7 +204,7 @@ public class OrderServiceTest {
                 LocalDateTime.now()
         );
 
-        orderStatusUpdateService.applyStatusUpdate(message);
+        orderCommandService.applyStatusUpdate(message);
 
         Order order = orderRepository.findById(orderId).orElseThrow();
         assertEquals(OrderStatus.ASSIGNED, order.getOrderStatus());
@@ -237,7 +226,7 @@ public class OrderServiceTest {
                 LocalDateTime.now()
         );
 
-        CustomException ex = assertThrows(CustomException.class, () -> orderStatusUpdateService.applyStatusUpdate(message));
+        CustomException ex = assertThrows(CustomException.class, () -> orderCommandService.applyStatusUpdate(message));
 
         assertEquals(OrderErrorCode.INVALID_STATUS_TRANSITION, ex.getCode());
     }
@@ -264,7 +253,7 @@ public class OrderServiceTest {
 
 
         Page<OrderSummaryResponse> result =
-                orderSearchService.searchOrders(condition, PageRequest.of(0, 10));
+                orderQueryService.searchOrders(condition, PageRequest.of(0, 10));
 
         assertEquals(2, result.getTotalElements());
         assertTrue(result.getContent().stream()
@@ -291,7 +280,7 @@ public class OrderServiceTest {
 
         // when
         Page<OrderSummaryResponse> result =
-                orderSearchService.searchOrders(condition, PageRequest.of(0, 10));
+                orderQueryService.searchOrders(condition, PageRequest.of(0, 10));
 
         // then
         assertEquals(2, result.getTotalElements());
@@ -324,7 +313,7 @@ public class OrderServiceTest {
         // when: 첫 페이지 (0, size=10)
         PageRequest page0 = PageRequest.of(0, 10);
         Page<OrderSummaryResponse> pageResult0 =
-                orderSearchService.searchOrders(condition, page0);
+                orderQueryService.searchOrders(condition, page0);
 
         // then
         assertEquals(25, pageResult0.getTotalElements());
@@ -335,7 +324,7 @@ public class OrderServiceTest {
         // when: 두 번째 페이지 (1, size=10)
         PageRequest page1 = PageRequest.of(1, 10);
         Page<OrderSummaryResponse> pageResult1 =
-                orderSearchService.searchOrders(condition, page1);
+                orderQueryService.searchOrders(condition, page1);
 
         assertEquals(10, pageResult1.getContent().size());
         assertEquals(1, pageResult1.getNumber());
@@ -343,7 +332,7 @@ public class OrderServiceTest {
         // when: 세 번째 페이지 (2, size=10)
         PageRequest page2 = PageRequest.of(2, 10);
         Page<OrderSummaryResponse> pageResult2 =
-                orderSearchService.searchOrders(condition, page2);
+                orderQueryService.searchOrders(condition, page2);
 
         assertEquals(5, pageResult2.getContent().size());  // 마지막 페이지는 5개
         assertEquals(2, pageResult2.getNumber());
