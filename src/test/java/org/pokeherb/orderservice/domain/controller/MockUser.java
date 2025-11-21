@@ -15,5 +15,5 @@ public @interface MockUser {
     String username() default "testuser";
     String name() default "테스트사용자";
     String email() default "test@test.org";
-    String[] roles() default "ROLE_USER";
+    String[] roles() default "MASTER";
 }
