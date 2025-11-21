@@ -1,4 +1,4 @@
-package org.pokeherb.orderservice.domain;
+package org.pokeherb.orderservice.domain.repository;
 
 import org.pokeherb.orderservice.domain.entity.Order;
 

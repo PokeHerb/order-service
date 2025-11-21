@@ -12,7 +12,7 @@ import org.pokeherb.orderservice.application.service.dto.request.OrderUpdateRequ
 import org.pokeherb.orderservice.application.service.dto.response.OrderCreateResponseDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderResponse;
 import org.pokeherb.orderservice.application.service.dto.response.OrderSummaryResponse;
-import org.pokeherb.orderservice.domain.OrderRepository;
+import org.pokeherb.orderservice.domain.repository.OrderRepository;
 import org.pokeherb.orderservice.domain.entity.Order;
 import org.pokeherb.orderservice.domain.entity.OrderStatus;
 import org.pokeherb.orderservice.domain.exception.OrderErrorCode;

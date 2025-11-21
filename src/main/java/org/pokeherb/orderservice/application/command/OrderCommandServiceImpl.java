@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderUpdateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderCreateResponseDto;
-import org.pokeherb.orderservice.domain.OrderRepository;
+import org.pokeherb.orderservice.domain.repository.OrderRepository;
 import org.pokeherb.orderservice.domain.command.OrderCreateCommand;
 import org.pokeherb.orderservice.domain.command.OrderUpdateCommand;
 import org.pokeherb.orderservice.domain.entity.Order;

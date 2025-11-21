@@ -4,7 +4,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.pokeherb.orderservice.application.service.dto.request.OrderSearchConditionRequestDto;
-import org.pokeherb.orderservice.domain.OrderQueryDao;
+import org.pokeherb.orderservice.domain.repository.OrderQueryRepository;
 import org.pokeherb.orderservice.application.service.dto.response.OrderSummaryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +15,7 @@ import static org.pokeherb.orderservice.domain.entity.QOrder.order;
 
 @Repository
 @RequiredArgsConstructor
-public class OrderQueryDaoImpl implements OrderQueryDao {
+public class OrderQueryDaoImpl implements OrderQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 

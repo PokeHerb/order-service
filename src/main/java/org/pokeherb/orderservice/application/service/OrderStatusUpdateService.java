@@ -2,7 +2,7 @@ package org.pokeherb.orderservice.application.service;
 
 import lombok.RequiredArgsConstructor;
 import org.pokeherb.orderservice.application.service.dto.request.OrderStatusUpdateMessageDto;
-import org.pokeherb.orderservice.domain.OrderRepository;
+import org.pokeherb.orderservice.domain.repository.OrderRepository;
 import org.pokeherb.orderservice.domain.command.OrderStatusUpdateCommand;
 import org.pokeherb.orderservice.domain.entity.Order;
 import org.pokeherb.orderservice.domain.entity.OrderStatus;
