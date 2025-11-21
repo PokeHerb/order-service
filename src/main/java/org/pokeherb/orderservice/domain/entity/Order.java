@@ -1,10 +1,14 @@
-package org.pokeherb.orderservice.domain;
+package org.pokeherb.orderservice.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.pokeherb.orderservice.domain.command.OrderCreateCommand;
+import org.pokeherb.orderservice.domain.command.OrderStatusUpdateCommand;
+import org.pokeherb.orderservice.domain.command.OrderUpdateCommand;
 import org.pokeherb.orderservice.domain.exception.OrderErrorCode;
 import org.pokeherb.orderservice.global.domain.Auditable;
 import org.pokeherb.orderservice.global.infrastructure.exception.CustomException;
@@ -35,7 +39,7 @@ public class Order extends Auditable {
     private String requestMemo;
 
     @Column(name = "quantity", nullable = false)
-    private int quantity;
+    private Integer quantity;
 
     @Column(name = "product_name", nullable = false)
     private String productName;
@@ -67,84 +71,60 @@ public class Order extends Auditable {
     @Column(name = "receive_vendor_id")
     private UUID receiveVendorId;
 
+    @Builder
     private Order(
-            UUID productId,
-            int quantity,
-            UUID orderUserId,
-            String productName,
+            UUID id,
+            OrderStatus orderStatus,
             LocalDateTime dueAt,
             String requestMemo,
-            Long startHubId,
-            Long endHubId,
-            UUID requestVendorId,
-            UUID receiveVendorId
-    ){
-        if(quantity <= 0){
-            throw new IllegalArgumentException("quantity must be greater than 0");
-        }
-        this.productId = productId;
-        this.quantity = quantity;
-        this.orderUserId = orderUserId;
-        this.productName = productName;
-        this.dueAt = dueAt;
-        this.requestMemo = requestMemo;
-        this.startHubId = startHubId;
-        this.endHubId = endHubId;
-        this.requestVendorId = requestVendorId;
-        this.receiveVendorId = receiveVendorId;
-        this.orderStatus = OrderStatus.CREATED;
-    }
-
-    public static Order create(
-            UUID productId,
             int quantity,
-            UUID orderUserId,
             String productName,
-            LocalDateTime dueAt,
-            String requestMemo,
+            UUID cancelledBy,
+            LocalDateTime cancelledAt,
+            UUID deliveryDriverId,
+            UUID productId,
             Long startHubId,
             Long endHubId,
+            UUID orderUserId,
             UUID requestVendorId,
             UUID receiveVendorId
     ) {
-        // 필수값 검증
-        if (productId == null) {
-            throw new CustomException(OrderErrorCode.INVALID_PRODUCT);
-        }
-        if (orderUserId == null) {
-            throw new CustomException(OrderErrorCode.INVALID_ORDER_USER);
-        }
-        if (productName == null || productName.isBlank()) {
-            throw new CustomException(OrderErrorCode.INVALID_PRODUCT_NAME);
-        }
+        this.id = id;
+        this.orderStatus = (orderStatus != null) ? orderStatus : OrderStatus.CREATED;
+        this.dueAt = dueAt;
+        this.requestMemo = requestMemo;
+        this.quantity = quantity;
+        this.productName = productName;
+        this.cancelledBy = cancelledBy;
+        this.cancelledAt = cancelledAt;
+        this.deliveryDriverId = deliveryDriverId;
+        this.productId = productId;
+        this.startHubId = startHubId;
+        this.endHubId = endHubId;
+        this.orderUserId = orderUserId;
+        this.requestVendorId = requestVendorId;
+        this.receiveVendorId = receiveVendorId;
+    }
 
-        // 수량 검증 (int 이므로 null 체크 X)
-        if (quantity <= 0) {
-            throw new CustomException(OrderErrorCode.INVALID_QUANTITY);
-        }
-
-        // 납기 일 검증
-        if (dueAt != null && dueAt.isBefore(LocalDateTime.now())) {
-            throw new CustomException(OrderErrorCode.INVALID_DUE_DATE);
-        }
-
-        return new Order(
-                productId,
-                quantity,
-                orderUserId,
-                productName,
-                dueAt,
-                requestMemo,
-                startHubId,
-                endHubId,
-                requestVendorId,
-                receiveVendorId
-        );
+    public static Order create(OrderCreateCommand command){
+        return Order.builder()
+                .productId(command.productId())
+                .quantity(command.quantity())
+                .orderUserId(command.orderUserId())
+                .productName(command.productName())
+                .orderStatus(OrderStatus.CREATED)
+                .dueAt(command.dueAt())
+                .requestMemo(command.requestMemo())
+                .startHubId(command.startHubId())
+                .endHubId(command.endHubId())
+                .requestVendorId(command.requestVendorId())
+                .receiveVendorId(command.receiveVendorId())
+                .build();
     }
 
     public void cancelOrder(UUID canceller, LocalDateTime cancelledAt){
         ensureNotDeleted();
-        if(!this.orderStatus.isCancellable()){
+        if(!this.orderStatus.canTransitionTo(OrderStatus.CANCELLED)){
             throw new CustomException(OrderErrorCode.ORDER_CANNOT_BE_CANCELLED);
         }
         this.orderStatus = OrderStatus.CANCELLED;
@@ -162,35 +142,50 @@ public class Order extends Auditable {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void delete(String deletedBy, LocalDateTime deletedAt) {
-        ensureNotDeleted();
-        this.deletedBy = deletedBy;
-        this.deletedAt = deletedAt;
-        this.updatedAt = deletedAt;
+    public void delete(String username) {
+        softDelete(username);
     }
 
-    public void updateOrderInfo(String productName, Integer quantity, String requestMemo, LocalDateTime dueAt) {
+    public void update(OrderUpdateCommand command) {
         ensureNotDeleted();
-
         if (!this.orderStatus.isEditable()) {
             throw new CustomException(OrderErrorCode.ORDER_CANNOT_BE_COMPLETED);
         }
 
-        if (productName != null && !productName.isBlank()) {
-            this.productName = productName;
+        if (command.productName() != null && !command.productName().isBlank()) {
+            this.productName = command.productName();
         }
-        if (quantity != null && quantity > 0) {
-            this.quantity = quantity;
+        if (command.quantity() != null && command.quantity() > 0) {
+            this.quantity = command.quantity();
         }
-        if (requestMemo != null) {
-            this.requestMemo = requestMemo;
+        if (command.requestMemo() != null) {
+            this.requestMemo = command.requestMemo();
         }
-        if (dueAt != null) {
-            this.dueAt = dueAt;
+        if (command.dueAt() != null) {
+            this.dueAt = command.dueAt();
         }
 
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void applyStatusUpdate(OrderStatusUpdateCommand command) {
+        ensureNotDeleted();
+        OrderStatus targetStatus = command.newStatus();
+
+        if (!this.orderStatus.canTransitionTo(targetStatus)) {
+            throw new CustomException(OrderErrorCode.INVALID_STATUS_TRANSITION);
+        }
+
+        this.orderStatus = targetStatus;
+
+        if (command.deliveryDriverId() != null) {
+            this.deliveryDriverId = command.deliveryDriverId();
+        }
+        this.updatedAt = command.changedAt() != null
+                ? command.changedAt()
+                : LocalDateTime.now();
+    }
+
     private void ensureNotDeleted() {
         if (this.deletedAt != null) {
             throw new CustomException(OrderErrorCode.ORDER_ALREADY_DELETED);

@@ -1,6 +1,6 @@
-package org.pokeherb.orderservice.domain;
+package org.pokeherb.orderservice.domain.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.pokeherb.orderservice.domain.entity.Order;
 
 import java.util.Optional;
 import java.util.UUID;
