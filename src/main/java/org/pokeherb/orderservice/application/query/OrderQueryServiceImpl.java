@@ -3,7 +3,7 @@ package org.pokeherb.orderservice.application.query;
 import lombok.RequiredArgsConstructor;
 import org.pokeherb.orderservice.application.service.dto.request.OrderSearchConditionRequestDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderResponseDto;
-import org.pokeherb.orderservice.application.service.dto.response.OrderSummaryResponse;
+import org.pokeherb.orderservice.application.service.dto.response.OrderSummaryResponseDto;
 import org.pokeherb.orderservice.domain.entity.Order;
 import org.pokeherb.orderservice.domain.exception.OrderErrorCode;
 import org.pokeherb.orderservice.domain.repository.OrderQueryRepository;
@@ -32,7 +32,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
     }
 
     @Transactional
-    public Page<OrderSummaryResponse> searchOrders(OrderSearchConditionRequestDto condition, Pageable pageable) {
+    public Page<OrderSummaryResponseDto> searchOrders(OrderSearchConditionRequestDto condition, Pageable pageable) {
         return orderQueryDao.search(condition, pageable);
     }
 }
