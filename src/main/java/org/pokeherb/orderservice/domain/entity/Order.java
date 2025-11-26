@@ -71,6 +71,15 @@ public class Order extends Auditable {
     @Column(name = "receive_vendor_id")
     private UUID receiveVendorId;
 
+    @Column
+    private String vendorAddress;
+
+    @Column
+    private UUID receiverSlackId;
+
+    @Column
+    private String receiverName;
+
     @Builder
     private Order(
             UUID id,
@@ -87,7 +96,10 @@ public class Order extends Auditable {
             Long endHubId,
             UUID orderUserId,
             UUID requestVendorId,
-            UUID receiveVendorId
+            UUID receiveVendorId,
+            String vendorAddress,
+            UUID receiverSlackId,
+            String receiverName
     ) {
         this.id = id;
         this.orderStatus = (orderStatus != null) ? orderStatus : OrderStatus.CREATED;
@@ -104,6 +116,9 @@ public class Order extends Auditable {
         this.orderUserId = orderUserId;
         this.requestVendorId = requestVendorId;
         this.receiveVendorId = receiveVendorId;
+        this.vendorAddress = vendorAddress;
+        this.receiverSlackId = receiverSlackId;
+        this.receiverName = receiverName;
     }
 
     public static Order create(OrderCreateCommand command){
@@ -119,6 +134,9 @@ public class Order extends Auditable {
                 .endHubId(command.endHubId())
                 .requestVendorId(command.requestVendorId())
                 .receiveVendorId(command.receiveVendorId())
+                .vendorAddress(command.vendorAddress())
+                .receiverSlackId(command.receiverSlackId())
+                .receiverName(command.receiverName())
                 .build();
     }
 
