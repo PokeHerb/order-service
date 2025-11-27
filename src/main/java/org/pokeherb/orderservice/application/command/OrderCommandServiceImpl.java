@@ -89,7 +89,6 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
         OrderStatusUpdateCommand command = new OrderStatusUpdateCommand(
                 newStatus,
-                messageDto.deliveryDriverId(),
                 messageDto.changedAt()
         );
         order.applyStatusUpdate(command);

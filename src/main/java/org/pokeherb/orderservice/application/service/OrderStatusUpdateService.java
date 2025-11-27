@@ -34,7 +34,6 @@ public class OrderStatusUpdateService {
         }
         OrderStatusUpdateCommand command = new OrderStatusUpdateCommand(
                 newStatus,
-                messageDto.deliveryDriverId(),
                 messageDto.changedAt()
         );
         order.applyStatusUpdate(command);

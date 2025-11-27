@@ -196,9 +196,6 @@ public class Order extends Auditable {
 
         this.orderStatus = targetStatus;
 
-        if (command.deliveryDriverId() != null) {
-            this.deliveryDriverId = command.deliveryDriverId();
-        }
         this.updatedAt = command.changedAt() != null
                 ? command.changedAt()
                 : LocalDateTime.now();

@@ -6,7 +6,6 @@ import java.util.UUID;
 public record OrderStatusUpdateMessageDto(
         UUID orderId,
         String orderStatus,
-        UUID deliveryDriverId,
         LocalDateTime changedAt
 ) {
 }
