@@ -1,4 +1,4 @@
-package org.pokeherb.orderservice.infrastructure.persistence;
+package org.pokeherb.orderservice.infrastructure.persistence.querydsl;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
