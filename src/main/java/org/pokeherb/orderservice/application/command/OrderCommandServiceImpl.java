@@ -1,19 +1,20 @@
 package org.pokeherb.orderservice.application.command;
 
 import lombok.RequiredArgsConstructor;
+import org.pokeherb.orderservice.application.service.dto.request.OrderCancelRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
-import org.pokeherb.orderservice.application.service.dto.request.OrderStatusUpdateMessageDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderUpdateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderCreateResponseDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderResponseDto;
-import org.pokeherb.orderservice.domain.command.OrderStatusUpdateCommand;
-import org.pokeherb.orderservice.domain.entity.OrderStatus;
-import org.pokeherb.orderservice.domain.repository.OrderRepository;
 import org.pokeherb.orderservice.domain.command.OrderCreateCommand;
+import org.pokeherb.orderservice.domain.command.OrderStatusUpdateCommand;
 import org.pokeherb.orderservice.domain.command.OrderUpdateCommand;
 import org.pokeherb.orderservice.domain.entity.Order;
+import org.pokeherb.orderservice.domain.entity.OrderStatus;
 import org.pokeherb.orderservice.domain.exception.OrderErrorCode;
+import org.pokeherb.orderservice.domain.repository.OrderRepository;
 import org.pokeherb.orderservice.global.infrastructure.exception.CustomException;
+import org.pokeherb.orderservice.infrastructure.persistence.messaging.dto.OrderStatusUpdateMessageDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,24 +48,24 @@ public class OrderCommandServiceImpl implements OrderCommandService {
 
     // Order
     @Transactional
-    public OrderCreateResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto request) {
+    public OrderCreateResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto dto) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
 
-        OrderUpdateCommand updateCommand = updateToCommand(request);
+        OrderUpdateCommand updateCommand = updateToCommand(dto);
 
         order.update(updateCommand);
         return OrderCreateResponseDto.from(order);
     }
 
     @Transactional
-    public OrderResponseDto cancelOrder(UUID orderId, UUID cancellerId){
-        if (cancellerId == null){
+    public OrderResponseDto cancelOrder(UUID orderId, OrderCancelRequestDto request) {
+        if (request.cancellerId() == null){
             throw new CustomException(OrderErrorCode.INVALID_CANCEL_USER);
         }
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
 
-        order.cancelOrder(cancellerId, LocalDateTime.now());
+        order.cancelOrder(request.cancellerId(), LocalDateTime.now());
         return OrderResponseDto.from(order);
     }
 
@@ -80,11 +81,11 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         Order order = orderRepository.findById(messageDto.orderId())
                 .orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
 
-        boolean isValid = Arrays.stream(OrderStatus.values()).anyMatch(s-> s.name().equals(messageDto.status()));
+        boolean isValid = Arrays.stream(OrderStatus.values()).anyMatch(s-> s.name().equals(messageDto.orderStatus()));
         if(!isValid){
             throw new CustomException(OrderErrorCode.INVALID_ORDER_STATUS);
         }
-        OrderStatus newStatus = OrderStatus.valueOf(messageDto.status());
+        OrderStatus newStatus = OrderStatus.valueOf(messageDto.orderStatus());
 
         OrderStatusUpdateCommand command = new OrderStatusUpdateCommand(
                 newStatus,
@@ -115,7 +116,10 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 request.startHubId(),
                 request.endHubId(),
                 request.requestVendorId(),
-                request.receiveVendorId()
+                request.receiveVendorId(),
+                request.vendorAddress(),
+                request.receiverSlackId(),
+                request.receiverName()
         );
     }
     private OrderUpdateCommand updateToCommand(OrderUpdateRequestDto request) {
