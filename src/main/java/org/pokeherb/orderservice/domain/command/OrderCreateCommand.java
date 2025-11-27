@@ -16,7 +16,10 @@ public record OrderCreateCommand (
     Long startHubId,
     Long endHubId,
     UUID requestVendorId,
-    UUID receiveVendorId
+    UUID receiveVendorId,
+    String vendorAddress,
+    UUID receiverSlackId,
+    String receiverName
 ){
     public OrderCreateCommand {
         // ⚠ 여기서부터는 "도메인 규칙"에 가까운 것들을 검증
