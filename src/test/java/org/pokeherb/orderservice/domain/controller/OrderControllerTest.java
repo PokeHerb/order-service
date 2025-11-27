@@ -3,25 +3,26 @@ package org.pokeherb.orderservice.domain.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.pokeherb.orderservice.application.command.OrderCommandService;
+import org.pokeherb.orderservice.application.query.OrderQueryService;
+import org.pokeherb.orderservice.application.service.dto.request.OrderCancelRequestDto;
+import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderSearchConditionRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderUpdateRequestDto;
+import org.pokeherb.orderservice.application.service.dto.response.OrderCreateResponseDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderResponseDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderSummaryResponseDto;
 import org.pokeherb.orderservice.domain.entity.OrderStatus;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.pokeherb.orderservice.global.infrastructure.success.GeneralSuccessCode;
+import org.pokeherb.orderservice.presentation.controller.OrderController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.pokeherb.orderservice.application.command.OrderCommandService;
-import org.pokeherb.orderservice.application.query.OrderQueryService;
-import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
-import org.pokeherb.orderservice.application.service.dto.response.OrderCreateResponseDto;
-import org.pokeherb.orderservice.global.infrastructure.success.GeneralSuccessCode;
-import org.pokeherb.orderservice.presentation.controller.OrderController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,12 +34,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import org.springframework.security.test.context.support.WithMockUser;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = OrderController.class)
 class OrderControllerTest {
@@ -63,7 +63,7 @@ class OrderControllerTest {
         UUID orderUserId = UUID.randomUUID();
         UUID requestVendorId = UUID.randomUUID();
         UUID receiveVendorId = UUID.randomUUID();
-
+        UUID receiverSlackId = UUID.randomUUID();
         OrderCreateRequestDto request = new OrderCreateRequestDto(
                 productId,
                 3,
@@ -74,7 +74,10 @@ class OrderControllerTest {
                 1L,
                 2L,
                 requestVendorId,
-                receiveVendorId
+                receiveVendorId,
+                "양재",
+                receiverSlackId,
+                "민재"
         );
 
         OrderCreateResponseDto response = org.mockito.Mockito.mock(OrderCreateResponseDto.class);
@@ -124,19 +127,20 @@ class OrderControllerTest {
     @DisplayName("컨트롤러 : 주문 취소 성공")
     void cancelOrder() throws Exception{
         UUID orderId = UUID.randomUUID();
-        UUID canellerId =  UUID.randomUUID();
+        UUID cancellerId  =  UUID.randomUUID();
 
         OrderResponseDto mockResoponse = org.mockito.Mockito.mock(OrderResponseDto.class);
-        given(orderCommandService.cancelOrder(eq(orderId), eq(canellerId))).willReturn(mockResoponse);
+        OrderCancelRequestDto dto = new OrderCancelRequestDto(cancellerId );
+        given(orderCommandService.cancelOrder(eq(orderId), any(OrderCancelRequestDto.class))).willReturn(mockResoponse);
         mockMvc.perform(post("/v1/order/{orderId}/cancel", orderId)
                     .with(csrf())
-                    .header("X-User-Id", canellerId.toString()))
+                    .header("X-User-Id", cancellerId .toString()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value(true))
                 .andExpect(jsonPath("$.code").value(GeneralSuccessCode.OK.getCode()))
                 .andExpect(jsonPath("$.result").exists());
-        verify(orderCommandService).cancelOrder(eq(orderId), eq(canellerId));
+        verify(orderCommandService).cancelOrder(eq(orderId), eq(dto));
     }
 
     @Test

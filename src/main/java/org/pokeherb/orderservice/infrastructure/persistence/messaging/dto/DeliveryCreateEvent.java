@@ -1,9 +1,10 @@
-package org.pokeherb.orderservice.application.service.dto.request;
+package org.pokeherb.orderservice.infrastructure.persistence.messaging.dto;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record OrderCreateRequestDto(
+public record DeliveryCreateEvent(
+        UUID orderId,
         UUID productId,
         int quantity,
         UUID orderUserId,
@@ -16,7 +17,6 @@ public record OrderCreateRequestDto(
         UUID receiveVendorId,
         String vendorAddress,
         UUID receiverSlackId,
-        String receiverName
-) { }
-
-
+        String receiverName,
+        LocalDateTime createdAt
+) {}

@@ -3,6 +3,7 @@ package org.pokeherb.orderservice.presentation.controller;
 import lombok.RequiredArgsConstructor;
 import org.pokeherb.orderservice.application.command.OrderCommandService;
 import org.pokeherb.orderservice.application.query.OrderQueryService;
+import org.pokeherb.orderservice.application.service.dto.request.OrderCancelRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderSearchConditionRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderUpdateRequestDto;
@@ -51,7 +52,8 @@ public class OrderController {
     @PostMapping("/{orderId}/cancel")
     @PreAuthorize("hasAnyRole('MASTER','HUB_MANAGER','DELIVERY_MANAGER','COMPANY_MANAGER')")
     public CustomResponse<OrderResponseDto> cancelOrder(@PathVariable UUID orderId, @RequestHeader("X-User-Id") UUID cancellerId) {
-        OrderResponseDto response = orderCommandService.cancelOrder(orderId, cancellerId);
+        OrderCancelRequestDto dto = new OrderCancelRequestDto(cancellerId);
+        OrderResponseDto response = orderCommandService.cancelOrder(orderId, dto);
         return CustomResponse.onSuccess(GeneralSuccessCode.OK, response);
     }
 

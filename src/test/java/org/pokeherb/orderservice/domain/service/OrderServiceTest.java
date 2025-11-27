@@ -5,18 +5,19 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.pokeherb.orderservice.application.command.OrderCommandService;
 import org.pokeherb.orderservice.application.query.OrderQueryService;
+import org.pokeherb.orderservice.application.service.dto.request.OrderCancelRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderCreateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderSearchConditionRequestDto;
-import org.pokeherb.orderservice.application.service.dto.request.OrderStatusUpdateMessageDto;
 import org.pokeherb.orderservice.application.service.dto.request.OrderUpdateRequestDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderCreateResponseDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderResponseDto;
 import org.pokeherb.orderservice.application.service.dto.response.OrderSummaryResponseDto;
-import org.pokeherb.orderservice.domain.repository.OrderRepository;
 import org.pokeherb.orderservice.domain.entity.Order;
 import org.pokeherb.orderservice.domain.entity.OrderStatus;
 import org.pokeherb.orderservice.domain.exception.OrderErrorCode;
+import org.pokeherb.orderservice.domain.repository.OrderRepository;
 import org.pokeherb.orderservice.global.infrastructure.exception.CustomException;
+import org.pokeherb.orderservice.infrastructure.persistence.messaging.dto.OrderStatusUpdateMessageDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -52,6 +54,9 @@ public class OrderServiceTest {
     private int quantity;
     private String requestMemo;
     private LocalDateTime dueAt;
+    private String vendorAddress;
+    private UUID receiverSlackId;
+    private String receiverName;
 
     @BeforeEach
     void init() {
@@ -66,6 +71,9 @@ public class OrderServiceTest {
         quantity = 3;
         requestMemo = "테스트 메모";
         dueAt = LocalDateTime.now().plusHours(2);
+        vendorAddress = "부산시";
+        receiverSlackId = UUID.randomUUID();
+        receiverName = "테스트";
     }
 
     private OrderCreateRequestDto createRequest() {
@@ -79,7 +87,10 @@ public class OrderServiceTest {
                 startHubId,
                 endHubId,
                 requestVendorId,
-                receiveVendorId
+                receiveVendorId,
+                vendorAddress,
+                receiverSlackId,
+                receiverName
         );
     }
 
@@ -95,7 +106,10 @@ public class OrderServiceTest {
                 startHubId,
                 endHubId,
                 requestVendorId,
-                receiveVendorId
+                receiveVendorId,
+                vendorAddress,
+                receiverSlackId,
+                receiverName
         );
     }
 
@@ -150,7 +164,8 @@ public class OrderServiceTest {
         UUID orderId = created.getOrderId();
 
         UUID cancellerId = UUID.randomUUID();
-        OrderResponseDto response = orderCommandService.cancelOrder(orderId, cancellerId);
+        OrderCancelRequestDto dto = new OrderCancelRequestDto(cancellerId);
+        OrderResponseDto response = orderCommandService.cancelOrder(orderId, dto);
 
         Order order =  orderRepository.findById(orderId).orElseThrow();
         assertEquals(OrderStatus.CANCELLED, order.getOrderStatus());
@@ -198,8 +213,6 @@ public class OrderServiceTest {
         OrderStatusUpdateMessageDto message = new OrderStatusUpdateMessageDto(
                 orderId,
                 "ASSIGNED",
-                driverId,
-                "COURIER",
                 LocalDateTime.now()
         );
 
@@ -220,8 +233,6 @@ public class OrderServiceTest {
         OrderStatusUpdateMessageDto message = new OrderStatusUpdateMessageDto(
                 orderId,
                 "COMPLETED",
-                null,
-                "COURIER",
                 LocalDateTime.now()
         );
 
