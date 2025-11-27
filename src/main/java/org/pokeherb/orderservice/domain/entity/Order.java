@@ -121,7 +121,7 @@ public class Order extends Auditable {
         this.receiverName = receiverName;
     }
 
-    public static Order create(OrderCreateCommand command){
+    public static Order create(OrderCreateCommand command) {
         return Order.builder()
                 .productId(command.productId())
                 .quantity(command.quantity())
