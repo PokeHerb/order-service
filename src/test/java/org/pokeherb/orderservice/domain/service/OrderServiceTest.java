@@ -213,7 +213,6 @@ public class OrderServiceTest {
         OrderStatusUpdateMessageDto message = new OrderStatusUpdateMessageDto(
                 orderId,
                 "ASSIGNED",
-                driverId,
                 LocalDateTime.now()
         );
 
@@ -234,7 +233,6 @@ public class OrderServiceTest {
         OrderStatusUpdateMessageDto message = new OrderStatusUpdateMessageDto(
                 orderId,
                 "COMPLETED",
-                null,
                 LocalDateTime.now()
         );
 
